@@ -1,0 +1,81 @@
+# ************** Importing the required Libraries ****************
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from bs4 import BeautifulSoup
+import os
+import time
+import datetime
+
+# ************** Setting the Chrome Options **********************
+
+chrome_option = webdriver.ChromeOptions()
+os.chdir(r'D:\Users\kekishor\Desktop\project')
+
+prefs = {"download.prompt_for_download" : False,
+        'download.default_directory' : os.getcwd()}
+
+# ************* Adding Options to chrome browser ****************
+
+chrome_option.add_experimental_option('prefs', prefs)
+
+# ************* Popping the browser *****************************
+
+driver = webdriver.Chrome(options=chrome_option)
+driver.maximize_window()
+
+# ************* Going to the required site **********************
+
+driver.get('https://news.google.com/')
+time.sleep(15)
+driver.find_element_by_class_name('rdp59b').click()
+time.sleep(10)
+
+# ************* Getting the Page Source *************************
+
+code = driver.page_source
+
+# ************* Parsing the Source ******************************
+
+source = BeautifulSoup(code, 'lxml')
+
+# ************* Iterating over the news classes *****************
+
+news = []
+for elements in source.find_all('div'):
+    if elements.has_attr('class'):
+        print(elements['class'])
+
+    
+    
+    
+    
+    else:
+        pass
+    
+    
+    try:
+        a = elements.get_attribute('class')
+        print(a)
+    except:
+        pass
+
+
+
+
+
+
+
+
+
+    for h4_element in elements.find_all('h4'):
+        print(h4_element.text)
+ #   except:
+  #      pass
+    news.append(elements.text)
+
+
+
+time.sleep(10)
+
