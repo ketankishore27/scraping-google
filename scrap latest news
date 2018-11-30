@@ -1,0 +1,59 @@
+# ************** Importing the required Libraries ****************
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from bs4 import BeautifulSoup
+import os
+import time
+#import datetime
+
+# ************** Setting the Chrome Options **********************
+
+chrome_option = webdriver.ChromeOptions()
+os.chdir(r'D:\Users\kekishor\Desktop\project')
+
+prefs = {"download.prompt_for_download" : False,
+        'download.default_directory' : os.getcwd()}
+
+# ************* Adding Options to chrome browser ****************
+
+chrome_option.add_experimental_option('prefs', prefs)
+
+# ************* Popping the browser *****************************
+
+driver = webdriver.Chrome(options=chrome_option)
+driver.maximize_window()
+
+# ************* Going to the required site **********************
+
+driver.get('https://news.google.com/')
+time.sleep(15)
+source = driver.page_source       
+source = BeautifulSoup(source, 'lxml')
+
+# ************* Getting the Page Links *************************
+
+news = []
+
+links = []
+for element in source.find_all('a', class_ = 'SFllF')[1:10]:
+    link = 'https://news.google.com' + element['href'][1:]
+    links.append(link)
+
+for i in links:
+    driver.get(i)
+    time.sleep(15)
+    
+    code = driver.page_source
+    source = BeautifulSoup(code, 'lxml')
+        
+    for elements in source.find_all('h3'):
+        for i in elements.find_all('a'):
+            link = 'https://news.google.com' + i['href'][1:]
+            news.append([elements.text, link])
+              
+    for element in source.find_all('h4'):
+        for i in element.find_all('a'):
+            link = 'https://news.google.com' + i['href'][1:]
+            news.append([element.text, link])
