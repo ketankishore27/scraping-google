@@ -1,0 +1,94 @@
+"""
+Note: In order to run the script successfully, Please make sure of the below points
+
+* The chrome driver version should be appropriate in accordance to the present chrome version being used
+* The path for the chrome driver should be specified in the Path variables else the chrome driver path can also be explicitly mentioned while defining the webdriver object
+
+"""
+
+
+# ************** Importing the required Libraries ****************
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+import os
+import time
+import datetime
+
+# ***************Getting Updated files from EMDAT**************
+
+# ** Credentials **
+
+username = 'ketan.kishore@capgemini.com'
+password = 'Qqqq+1111'
+
+# ** Setting the Chrome Options ** 
+
+chrome_option = webdriver.ChromeOptions()
+os.chdir(r'D:\Users\kekishor\Desktop\project')
+
+prefs = {"download.prompt_for_download" : False,
+        'download.default_directory' : os.getcwd()}
+
+# ** Adding Options to chrome browse r**
+
+chrome_option.add_experimental_option('prefs', prefs)
+
+# ** Popping the browser **
+
+driver = webdriver.Chrome(options=chrome_option)
+driver.maximize_window()
+
+# ** Going to the required site **
+
+driver.get('https://www.emdat.be/emdat_db/')
+time.sleep(10)
+#driver.save_screenshot('Login_page.png')
+
+# ** Putting the required Credentials **
+
+driver.find_element_by_id('textfield-1012-inputEl').send_keys(username)
+time.sleep(1)
+driver.find_element_by_id('textfield-1013-inputEl').send_keys(password)
+time.sleep(1)
+#driver.save_screenshot('Credential.png')
+driver.find_element_by_id('button-1017-btnInnerEl').click()
+time.sleep(5)
+
+# ** Fetching the Advanced Search Options ** 
+
+driver.find_element_by_id('button-1024-btnInnerEl').click()
+time.sleep(5)
+#driver.save_screenshot('Before_modifying_fields.png')
+
+# ** Filling up the crtiteria for search ** 
+
+driver.find_element_by_id('numberfield-1049-inputEl').clear() 
+driver.find_element_by_id('numberfield-1049-inputEl').send_keys('1900')
+driver.find_element_by_id('numberfield-1050-inputEl').clear()
+driver.find_element_by_id('numberfield-1050-inputEl').send_keys(str(datetime.datetime.now().year))
+driver.find_element_by_id('radiofield-1053-inputEl').click()
+for i in driver.find_elements_by_tag_name('li'):
+    ActionChains(driver).key_down(Keys.LEFT_CONTROL).click(i).key_up(Keys.LEFT_CONTROL).perform()
+
+driver.find_element_by_id('button-1065-btnIconEl').click()
+driver.find_element_by_id('button-1100-btnIconEl').click()
+
+for i in driver.find_elements_by_class_name('x-tree-checkbox'):
+    i.click()
+#driver.save_screenshot('After_filling_infos.png')
+
+# ** Submitting the criteria **
+    
+driver.find_element_by_id('button-1103-btnInnerEl').click()
+time.sleep(10)
+#driver.save_screenshot('information_to_download.png')
+
+# ** Downloading the file ** 
+
+driver.find_element_by_id('button-1142-btnInnerEl').click()
+time.sleep(20)
+#driver.save_screenshot('information_recieved.png')
+
+# ** Closing the Driver **
+driver.close()
