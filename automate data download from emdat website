@@ -19,8 +19,8 @@ import datetime
 
 # ** Credentials **
 
-username = 'ketan.kishore@capgemini.com'
-password = 'Qqqq+1111'
+username = '******************'
+password = '**********'
 
 # ** Setting the Chrome Options ** 
 
