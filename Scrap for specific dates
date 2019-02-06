@@ -1,0 +1,60 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+
+def scrap_headline_specific_date(name, start_date, end_date):
+
+    # Defining a dataframe to store the data and later saving it to excel
+    test_dataframe = pd.DataFrame(columns = ['News', 'Link'])
+    iteration = range(0, 30, 10)
+    
+    # Putting the URL into loop to scrap out atleast 30 news for given amount of days
+    for i in iteration:
+    
+        try:
+            
+            # Defining a baseline URL 
+                url= 'https://www.google.com/search?q={}&tbs=cdr:1,cd_min:{},cd_max:{},sbd:1&tbm=nws&ei=6rxaXNCnMI2asAfm_qjABw&start=0&sa=N&ved=0ahUKEwjQxJbp-KbgAhUNDewKHWY_CngQ8tMDCF8&biw=1440&bih=709&dpr=1'.format(name, start_date, end_date)
+                
+            # Hitting the URL and Parsing it
+                source = BeautifulSoup(requests.get(url).text, 'lxml')
+                
+            # Scraping the news and the respective links
+                for elements in source.find_all('div', class_ = 'g'):
+                    data = []
+                    heading = elements.find('h3').text
+                    link = '.' + elements.find('a')['href'].split('=')[1][:-3]
+                    data.append([heading, link])
+                    sample_dataframe = pd.DataFrame(data = data, columns = ['News', 'Link'])
+                    test_dataframe = pd.concat([test_dataframe, sample_dataframe], axis = 0)
+                    print(data)
+                    print()
+        except:
+            
+            pass
+    
+    # Writing to an Excel File 
+    test_dataframe.set_index('News', inplace = True)
+    test_dataframe.to_excel('D:\\Users\\kekishor\\Desktop\\project\\filtered_extract1\\' + name + '.xlsx')    
+    return test_dataframe
+
+company_names = pd.read_excel(r'D:\Users\kekishor\Desktop\project\insurance_company names\insurance_companies.xlsx').iloc[:, 0]
+
+final_data = pd.DataFrame(columns = ['News', 'Link']) 
+
+
+dates = input('Please enter the Starting_date and ending_date in this format -> "mm/dd/yyyy-mm/dd/yyyy" ')
+start_date, end_date = dates.split('-')[0], dates.split('-')[1]
+
+for company in company_names:
+    final_data = pd.concat([final_data, scrap_headline_specific_date(company, start_date, end_date)], axis = 0)
+    
+# Writing the final output file
+    
+writer = pd.ExcelWriter('News for specific dates.xlsx', engine='xlsxwriter')
+        
+final_data.to_excel(writer)
+            
+workbook = writer.book
+worksheet = writer.sheets['Sheet1']
+wrap_format = workbook.add_format({'text_wrap' : True})
