@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import time
+from nltk.tokenize import sent_tokenize
 
 def content(link):
     
@@ -10,24 +11,30 @@ def content(link):
         in parallel
         
     """
-    # Requesting the Scraped Link
-    time.sleep(2)               # Reducing number of pings to avoid ip blocks though not neccessary at this stage
-    source = requests.get(link[1:], verify = False)
-    
-    # Check if the request is successful
-    if source.status_code == 200:
+    try:
+        # Requesting the Scraped Link
+        time.sleep(2)     # Reducing number of pings to avoid ip blocks though not neccessary at this stage
+        source = requests.get(link[1:], verify = False)
         
-        # Parsing the link text
-        source = BeautifulSoup(source.text, 'lxml')
-        context = ' '
-        
-        # Finding the Paragraph text using 'p' tag
-        for data in source.find_all('p'):
-            context = context + ' ' +data.text
-               
-    else:
-        
-        print('Requested site for content did not respond. Status Code is ', source.status_code)
+        # Check if the request is successful
+        if source.status_code == 200:
+            
+            # Parsing the link text
+            source = BeautifulSoup(source.text, 'lxml')
+            context = ' '
+            
+            # Finding the Paragraph text using 'p' tag
+            for data in source.find_all('p'):
+                
+                # Implementing a bit of cleaning text at initial stage
+                if len(data) < 2:
+                    data = data.text.replace('  ', '')
+                    context = context + ' ' + data.rstrip().lstrip().rstrip('\n').lstrip('\n')                   
+        else:
+            
+            print('Requested site for content did not respond. Status Code is ', source.status_code)
+    except Exception as e:
+        print(str(e))
             
     return context
         
@@ -49,7 +56,7 @@ def scrap_headline_window(name, days, keys):
             
         # Hitting the URL and Parsing it
             source = requests.get(url)
-            time.sleep(3)      # Reducing overload condition on the server else the IP might get blocked
+            time.sleep(5)      # Reducing overload condition on the server else the IP might get blocked
             
             # Checking the Status code for successful request
             if source.status_code == 200:
@@ -95,6 +102,7 @@ keywords = ['ACCIDENT', 'PREMIUM' , 'SERVICES', 'PRODUCT', 'RISK', 'RATE', 'BROK
             'MORTGAGE', 'POLICY', 'REIMBURSEMENT', 'REINSTATEMENT', 'RENEWAL', 'SETTLEMENT', 'VALUATION', 
             'WAIVER']
 
+company_names = ['Allianz']
 # Loop all the company names with each of these keywords (Might take a bit)
 for company in company_names:
     final_data = pd.DataFrame(columns = ['News', 'Content', 'Link', 'Keyword'])
@@ -115,4 +123,58 @@ for company in company_names:
     worksheet.set_column('D:D', 20, wrap_format)
     
     writer.save()
-    writer.close()    
+    writer.close()
+
+# This stopwords file can be enhanced more to enrich the data    
+with open('stopwords.txt') as ads_word:
+    
+    """    
+        The sentences containing these words will removed from the content we got        
+    """   
+    
+    stopword = []
+    for i in ads_word.readlines():
+        if len(i) > 1:
+            stopword.append(i)
+
+
+# Implementing the Cleaning Process
+def cleaning_text(content):
+    
+    """
+    
+        Cleaning the text process involves the following steps
+            
+            -- Implementation of striping spaces and new line
+                    This step has been implemented in the function 'Content' while scraping the data
+            -- Implementation of sentence tokenizer 
+                    To process each sentence individually
+            -- Implementation of stopwords
+                    These keywords are manually prepared for the obvious keys which shows waste data
+            -- Sentence Less than 4 words should be removed. High chances of being an ad
+            
+    """
+    filtered_message = ''  # Resetting the filtered message for every token
+    print(len(sent_tokenize(content)))
+    
+    for word in sent_tokenize(content):
+        
+        spam = 0      # Setting the spam flag, whenever it is set to 1, the sentence will be discarded
+            
+        for ad_word in stopword:     # Checking for stopword
+            if (ad_word in word.lower()):
+                spam = 1
+                break
+                
+        if len(word.split())< 5:  # Checking for length of the sentence
+            spam = 1
+        
+        if spam == 0:     # If flag does not changes, then adding it to the filtered message
+            filtered_message = filtered_message + word
+        print(filtered_message)
+    return filtered_message
+                
+            
+final_data['Content'] = final_data['Content'].apply(cleaning_text)
+
+       
