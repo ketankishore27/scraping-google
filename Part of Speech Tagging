@@ -1,0 +1,43 @@
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+
+stop_word = set(stopwords.words('english'))
+
+
+def pos_tagging(sample):
+    
+    """
+        This function helps to find the Part Of Speech Tagging in sentence
+    """
+    
+    # Wrapping it into try-except block
+    try:
+        word_token = word_tokenize(sample.lower())
+        
+        filtered_message = ' '.join([word for word in word_token if word not in stop_word])
+        
+        doc = nlp(filtered_message)
+        
+        pos_tag = {}
+        for token in doc:
+                
+            if token.pos_ in pos_tag.keys():
+                pos_tag[token.pos_].append(token.text)
+                
+            else:
+                pos_tag[token.pos_] = [token.text]
+        
+        pos_tag_filtered = {}        
+        for word in pos_tag.keys():
+            print(set(pos_tag[word]))
+            
+            pos_tag_filtered[word] = [word for word in set(pos_tag[word])]
+            
+        return pos_tag_filtered
+    
+    except Exception as e:
+        
+        print(str(e))
+        return {}
+
+final_data['Part Of Speech Tagging'] = final_data['Content'].apply(pos_tagging)
