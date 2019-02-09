@@ -1,30 +1,33 @@
-import spacy
-from spacy import displacy
-from collections import Counter
-import en_core_web_sm
-
-nlp = en_core_web_sm.load()
-
-sentence = """
-  A number of other research firms have also recently commented on ALV. JPMorgan Chase & Co.set a €219.00 ($254.65) price target on shares of Allianz and gave the stock a buy rating in a report on Monday, October 1st. Deutsche Bankset a €220.00 ($255.81) target price on shares of Allianz and gave the stock a buy rating in a report on Tuesday, October 2nd. Societe Generaleset a €215.00 ($250.00) target price on shares of Allianz and gave the stock a buy rating in a report on Monday, November 12th. Kepler Capital Marketsset a €240.00 ($279.07) target price on shares of Allianz and gave the stock a buy rating in a report on Monday, November 12th. Finally, DZ Bankreissued a buy rating on shares of Allianz in a research report on Monday, December 3rd. Eight investment analysts have rated the stock with a hold rating and sixteen have given a buy rating to the company. The stockhas an average rating of Buy and an average target price of €214.82 ($249.79). Allianz Company Profile Allianz SE, together with its subsidiaries, provides property-casualty insurance, life/health insurance, and asset management products and services worldwide. The company's Property-Casualty segment offers various insurance products, including motor liability and own damage, accident, general liability, fire and property, legal expense, credit, and travel insurance products to private and corporate customers.  E.On (EOAN) PT Set at €10.00 by Barclays Cohen & Steers REIT/Pfd Inc Fd (RNP) Holdings Lifted by Dubuque Bank & Trust Co.
-  """
-
-# Loading the sentence
-doc = nlp(sentence)
-print(set([(X.text, X.label_) for X in doc.ents]))
-
-entities = {}
-data = []
-for i in set(doc.ents):
-
-    if i.label_ in entities.keys():
-        entities[i.label_].append(i.text)
-    else:
-        entities[i.label_] = [i.text]
-print(entities)
-    print('{} - {}'.format(i.text, i.label_))
+def derive_entities(sentence):
     
+    """
+        This function is used to recognize entities in the news body 
+    """
 
-# Displaying the dependancy visualizer for the same
+    # Wrapping a try- except block to handle the exception
+    try:    
+        
+        # Loading the sentence
+        doc = nlp(sentence)
+        
+        # Initializing an empty dictionary to store entities
+        entities = {}
+        
+        # Iterating over the entities
+        for i in set(doc.ents):
+            
+            if i.label_ in entities.keys():
+                entities[i.label_].append(i.text)
+            else:
+                entities[i.label_] = [i.text]
+            
+        # Displaying the sentence according to the recognized entities
+        displacy.render(doc, style = 'ent', jupyter = True)
+        print('-'*50)
 
-displacy.render(nlp(sentence), style = 'ent')
+        return entities
+        
+    except Exception as e:
+        
+        print(str(e))
+        return None
